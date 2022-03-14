@@ -1,0 +1,27 @@
+{
+    "name": "otpsaas-srv",
+    "engines": {
+        "node": "14.x"
+    },
+    "dependencies": {
+        "@sap-cloud-sdk/core": "^1.54.0",
+        "@sap/hdbext": "latest",
+        "@sap/xsenv": "latest",
+        "@sap/xssec": "latest",
+        "async": "^3.2.3",
+        "axios": "latest",
+        "body-parser": "latest",
+        "cfenv": "latest",
+        "commander": "^9.0.0",
+        "deasync": "^0.1.24",
+        "express": "latest",
+        "passport": "latest",
+        "qs": "latest",
+        "request-promise": "^4.2.6",
+        "sap-cf-axios": "^0.2.35",
+        "util": "^0.12.4"
+    },
+    "scripts": {
+        "start": "node server.js"
+    }
+}

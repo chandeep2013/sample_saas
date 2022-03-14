@@ -1,0 +1,132 @@
+ID: otpsaas
+_schema-version: "3.1"
+version: 0.0.1
+
+parameters:
+  enable-parallel-deployments: true
+
+modules:
+  - name: otpsaas-db
+    type: com.sap.xs.hdi-dynamic
+    path: db
+    parameters:
+      memory: 256M
+      disk-quota: 512M
+    properties:
+      hdi_dynamic_deploy_user: ${generated-user}
+      hdi_dynamic_deploy_password: ${generated-password}
+    provides:
+      - name: db_api
+        properties:
+          url: ${default-url}
+          user: ${generated-user}
+          password: ${generated-password}
+
+  - name: otpsaas-srv
+    type: nodejs
+    path: srv
+    parameters:
+      memory: 256M
+      disk-quota: 512M
+    provides:
+      - name: srv_api
+        properties:
+          url: ${default-url}
+    requires:
+      - name: otpsaas-uaa
+      - name: otpsaas-registry
+      - name: otpsaas-sm
+      - name: db_api
+        properties:
+          db_api_url: ~{url}
+          db_api_user: ~{user}
+          db_api_password: ~{password}
+      - name: otpsaas-dest
+
+  - name: otpsaas
+    type: html5
+    path: app
+    parameters:
+      memory: 256M
+      disk-quota: 512M
+      keep-existing-routes: true
+    provides:
+      - name: app_api
+        properties:
+          url: ${default-url}
+          application: ${app-name}
+    properties:
+      TENANT_HOST_PATTERN: '^(.*)-${space}-${app-name}.${default-domain}'
+    requires:
+      - name: otpsaas-uaa
+      - name: srv_api
+        group: destinations
+        properties:
+          name: srv
+          url: ~{url}
+          forwardAuthToken: true
+
+resources:
+  - name: otpsaas-uaa
+    type: org.cloudfoundry.managed-service
+    requires: 
+      - name: app_api
+    properties:
+      XSAPPNAME: ${xsuaa-app}
+    parameters:
+      path: ./xs-security.json
+      service: xsuaa
+      service-plan: application
+      xsuaa-app: ${space}-~{app_api/application}
+      config:
+        xsappname: ${xsuaa-app}
+  - name: otpsaas-sm
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: service-manager
+      service-plan: container
+  - name: otpsaas-registry
+    type: org.cloudfoundry.managed-service
+    requires:
+      - name: otpsaas-uaa
+      - name: otpsaas-dest
+    parameters:
+      service: saas-registry
+      service-plan: application
+      service-name: otpsaas-registry
+      config:
+        xsappname: ~{otpsaas-uaa/XSAPPNAME}
+        appName: otpsaas
+        displayName: 'otpsaas'
+        description: 'My SaaS Business Application'
+        category: 'SaaS Multitenant Apps'
+        appUrls:
+          onSubscription: https://${org}-${space}-otpsaas-srv.${default-domain}/callback/v1.0/tenants/{tenantId}
+          getDependencies: https://${org}-${space}-otpsaas-srv.${default-domain}/callback/v1.0/dependencies
+  - name: otpsaas-dest
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: destination
+      service-plan: lite
+      config:
+        init_data:
+          instance:
+            existing_destinations_policy: ignore
+            destinations:
+              - Name: otpsaas-cfapi
+                Description: CF Cloud Controller API
+                URL: ${controller-url}
+                Type: HTTP
+                ProxyType: Internet
+                Authentication: OAuth2Password
+                tokenServiceURL: ${authorization-url}/oauth/token
+                clientId: cf
+                clientSecret:
+                User: <SetValueInCockpit>
+                Password: <SetValueInCockpit>
+              - Name: otpsaas-dest
+                Description: Application Destination
+                URL: https://services.odata.org/Northwind/Northwind.svc
+                Type: HTTP
+                ProxyType: Internet
+                Authentication: NoAuthentication

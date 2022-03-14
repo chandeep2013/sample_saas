@@ -1,0 +1,15 @@
+{
+  "generator-saphanaacademy-saas": {
+    "projectName": "otpsaas",
+    "newDir": true,
+    "displayName": "otpsaas",
+    "description": "My SaaS Business Application",
+    "category": "SaaS Multitenant Apps",
+    "SaaSAPI": true,
+    "HANA": true,
+    "customDomain": "",
+    "routes": true,
+    "destination": true,
+    "buildDeploy": true
+  }
+}

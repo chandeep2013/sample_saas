@@ -1,0 +1,35 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core">
+	<Dialog title="{i18n>Ledger}" class="sapUiSizeCompact" afterClose="onAfterCloseF4Help" contentWidth="25%" >
+		<Table id="idF4HelpLedgerTable" sticky="ColumnHeaders" items="{path:'ParamData>/Ledger',sorter:{path:'Key',descending:true}}" mode="SingleSelectMaster"
+        growing="true"
+		growingThreshold="50"
+		growingScrollToLoad="true">
+			<columns>
+				<Column>
+					<Text text="{i18n>Key}" />
+				</Column>
+				<Column>
+					<Text text="{i18n>Text}" />
+				</Column>
+			</columns>
+			<items>
+				<ColumnListItem vAlign="Middle">
+					<cells>
+						<Text
+						text="{ parts: [ {path: 'ParamData>Ledger'}], formatter: '.formatter.LedgerKey' }" />
+						<Text
+						text="{ParamData>LedgerText}" />
+					</cells>
+				</ColumnListItem>
+			</items>
+		</Table>
+		<beginButton>
+			<Button  text="OK" type="Emphasized" press="onLedgerF4HelpSelect"/>
+		</beginButton>
+		<endButton>
+			<Button text="Cancel" type="Reject" press="onLedgerCancel"/>
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>
